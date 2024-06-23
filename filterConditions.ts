@@ -1,18 +1,42 @@
-// Example conditions
-const conditions: FilterCondition[] = [
-  // Condition 1: status in ("In Review", "Progress", "Coded", "Pending Test", "Testing", "Sign off") and labels in ("Q22024Prioritized")
-  (item: Dictionary) => 
-    ["In Review", "Progress", "Coded", "Pending Test", "Testing", "Sign off"].includes(item.status) &&
-    item.labels.includes("Q22024Prioritized"),
+interface Dictionary {
+  key: string;
+  summary: string;
+  status: string;
+  tshirtsize: string;
+  labels: string[];
+  fixversion: string;
+  assignee: string;
+  duedate: string;
+  rag: string;
+  cap: string;
+  bcm: string;
+  resolutiondate: string;
+}
 
-  // Condition 2: status not in ("Closed") and labels includes "Backlog" and labels does not include "Recent"
-  (item: Dictionary) => 
-    item.status !== "Closed" &&
-    item.labels.includes("Backlog") &&
-    !item.labels.includes("Recent")
-  
-  // Add more conditions here as needed
-];
+type FilterCondition = (item: Dictionary) => boolean;
+
+const filterConditions: { [key: string]: FilterCondition[] } = {
+  conditionSet1: [
+    (item: Dictionary) => 
+      ["In Review", "Progress", "Coded", "Pending Test", "Testing", "Sign off"].includes(item.status) &&
+      item.labels.includes("Q22024Prioritized"),
+  ],
+  conditionSet2: [
+    (item: Dictionary) => 
+      item.status !== "Closed" &&
+      item.labels.includes("Backlog") &&
+      !item.labels.includes("Recent"),
+  ],
+  // Add more sets of conditions here as needed
+};
+
+function filterDictionaries(dictionaries: Dictionary[], conditionKey: string): Dictionary[] {
+  const conditions = filterConditions[conditionKey];
+  if (!conditions) {
+    throw new Error(`No conditions found for key: ${conditionKey}`);
+  }
+  return dictionaries.filter(item => conditions.every(condition => condition(item)));
+}
 
 // Example usage
 const dictionaries: Dictionary[] = [
@@ -48,5 +72,5 @@ const dictionaries: Dictionary[] = [
   // Add more dictionary objects here
 ];
 
-const filteredDictionaries = filterDictionaries(dictionaries, conditions);
+const filteredDictionaries = filterDictionaries(dictionaries, 'conditionSet1');
 console.log(filteredDictionaries);
