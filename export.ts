@@ -1,12 +1,18 @@
 import * as XLSX from 'xlsx';
 
-export const exportTableToExcel = (tableId: string, fileName: string = 'table.xlsx') => {
-  const table = document.getElementById(tableId);
-  if (!table) {
-    console.error(`Table with id ${tableId} not found`);
-    return;
-  }
+export const exportTablesToExcel = (tableIds: string[], fileName: string = 'tables.xlsx') => {
+  const workbook = XLSX.utils.book_new();
+  
+  tableIds.forEach((tableId, index) => {
+    const table = document.getElementById(tableId);
+    if (!table) {
+      console.error(`Table with id ${tableId} not found`);
+      return;
+    }
+    
+    const worksheet = XLSX.utils.table_to_sheet(table);
+    XLSX.utils.book_append_sheet(workbook, worksheet, `Sheet${index + 1}`);
+  });
 
-  const workbook = XLSX.utils.table_to_book(table, { sheet: 'Sheet1' });
   XLSX.writeFile(workbook, fileName);
 };
